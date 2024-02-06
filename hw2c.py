@@ -1,56 +1,62 @@
-def Secant(fcn, x0, x1, maxiter=10, xtol=1e-5):
+def gauss_seidel(A, b, x0, tol=1e-5, Niter=15):
     """
-    Use the Secant Method to find the root of a function.
+    Estimates the solution to a system of linear equations using the Gauss-Seidel method.
 
     Parameters:
-    - fcn (function): The function to find the root.
-    - x0 (float): The first initial guess.
-    - x1 (float): The second initial guess.
-    - maxiter (int): Max number of iterations.
-    - xtol (float): Exit if the absolute difference between consecutive
-                   estimates is less than xtol.
+    A (list[list[float]]): The matrix of coefficients.
+    b (list[float]): The vector of constants.
+    x0 (list[float]): The initial guess for the solution.
+    tol (float): The tolerance for the stopping criterion. Default is 1e-5.
+    Niter (int): The maximum number of iterations to perform. Default is 15.
 
     Returns:
-    float: The final estimate of the root.
+    list[float]: The estimated solution to the system of linear equations.
     """
-    x_prev = x0
-    x_current = x1
+    # Initialize a list to store the new x vectors
+    x_new = [x0[:]]
 
-    for iteration in range(maxiter):
-        f_prev = fcn(x_prev)
-        f_current = fcn(x_current)
+    # Iterate to compute the new x vectors
+    for _ in range(Niter):
+        x_new_temp = [0] * len(A)
+        for i in range(len(A)):
+            s1 = sum(A[i][j] * x_new[-1][j] for j in range(i))
+            s2 = sum(A[i][j] * x_new_temp[j] for j in range(i))
+            x_new_temp[i] = (b[i] - s1 - s2) / A[i][i]
 
-        if f_current - f_prev == 0:
-            raise ValueError("Secant method: Division by zero.")
+            # Check if the maximum change in the components of the solution vector is below the tolerance
+            if i == len(A) - 1:
+                if all(abs(x_new_temp[k] - x_new[-1][k]) < tol for k in range(len(A))):
+                    break
 
-        x_new = x_current - f_current * (x_current - x_prev) / (f_current - f_prev)
+        x_new.append(x_new_temp)
 
-        if abs(x_new - x_current) < xtol:
-            return x_new
-
-        x_prev = x_current
-        x_current = x_new
-
-    return x_current
-
+    # Return the estimated solution
+    return x_new[-1]
 
 def main():
-    """
-    Main function to demonstrate the Secant method for different equations.
-    """
-    fcn1 = lambda x: x - 3 * cos(x)
-    root1 = Secant(fcn1, x0=1, x1=2, maxiter=5, xtol=1e-4)
-    print(f"Root for x - 3cos(x) = 0: {root1}")
+    # Define the first set of linear equations
+    A1 = [[3, 1, -1],
+           [1, 4, 1],
+           [1, 3, 9]]
+    b1 = [2, 1, 12]
+    x01 = [1, 1, 1]
 
-    fcn2 = lambda x: cos(2*x) * x**3
-    root2 = Secant(fcn2, x0=1, x1=2, maxiter=15, xtol=1e-8)
-    print(f"Root for cos(2x) * x^3 = 0: {root2}")
+    # Estimate and print the solution to the first set of linear equations
+    x_sol1 = gauss_seidel(A1, b1, x01)
+    print("Solution to the first set of linear equations:")
+    print(x_sol1)
 
-    fcn3 = lambda x: cos(2*x) * x**3
-    root3 = Secant(fcn3, x0=1, x1=2, maxiter=3, xtol=1e-8)
-    print(f"Root for cos(2x) * x^3 = 0 (limited iterations): {root3}")
+    # Define the second set of linear equations
+    A2 = [[1, 2, 0],
+           [1, 3, 4],
+           [1, 2, 7]]
+    b2 = [12, 21, 3]
+    x02 = [1, 1, 1]
 
+    # Estimate and print the solution to the second set of linear equations
+    x_sol2 = gauss_seidel(A2, b2, x02)
+    print("Solution to the second set of linear equations:")
+    print(x_sol2)
 
 if __name__ == "__main__":
-    from math import cos
     main()

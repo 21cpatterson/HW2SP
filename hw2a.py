@@ -5,16 +5,18 @@ def Simpson_13(PDF, args, a, b, n=1000):
     x = a
     integral = PDF(args, x)
 
+    # Add the contributions from all odd-numbered intervals
     for i in range(1, n, 2):
         x += h
         integral += 4 * PDF(args, x)
 
+    # Add the contributions from all even-numbered intervals
     x = a + h
-
     for i in range(2, n - 1, 2):
         x += h
         integral += 2 * PDF(args, x)
 
+    # Multiply by h/3 to get the approximate value of the definite integral
     integral *= h / 3
     return integral
 
@@ -34,12 +36,13 @@ def Probability(PDF, args, c, GT=True):
     """
     mu, sigma = args
     if GT:
-        a = mu - 5 * sigma
+        a = mu - 5 * sigma  # Lower limit of integration for P(x>c)
         b = c
     else:
-        a = c
+        a = c   # Lower limit of integration for P(x<c)
         b = mu + 5 * sigma
 
+    # Calculate the definite integral of the PDF form a to b
     result = Simpson_13(PDF, args, a, b)
     return result
 
